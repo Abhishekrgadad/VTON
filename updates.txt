@@ -1,4 +1,4 @@
-* Updated need to be done in this Project
+* Updated Pending
 -> Add different colors of cloths in realtime
 -> Try with Gender wise detection of cloths 
 -> Add some styling to cloths or appearance (not sure)
@@ -8,3 +8,7 @@
 -> Make the appearance of python screen to full window. -->(DONE)
 -> Gender Detection -->(DONE)
 -> Size predication by recognizing the body structure.
+
+
+
+* Updates Done
