@@ -112,7 +112,7 @@ def overlay_clothing(frame, clothing_img, landmarks, size_factor, aspect_ratio, 
         if clothing_id.startswith("shirt"):
             if clothing_id == "shirt1":
                 scaling_factor = 1.8
-                vertical_offset = -30
+                vertical_offset =-30
             elif clothing_id == "shirt2":
                 scaling_factor = 2.0
                 vertical_offset = -45
@@ -208,12 +208,12 @@ def overlay_clothing(frame, clothing_img, landmarks, size_factor, aspect_ratio, 
 
         # Calculate position
         center_x = int((left_shoulder.x + right_shoulder.x) / 2 * frame.shape[1])
-        top_y = int(min(left_shoulder.y, right_shoulder.y) * frame.shape[0])
+        top_y = int(((left_shoulder.y + right_shoulder.y) / 2) * frame.shape[0])
         top_left_x = center_x - clothing_width // 2
-        top_left_y = top_y + vertical_offset
+        top_left_y = top_y + vertical_offset 
 
         # Debug output
-        print(f"Current size: {current_size}")
+        # print(f"Current size: {current_size}")
         # print(f"Left Shoulder: ({left_shoulder.x}, {left_shoulder.y})")
         # print(f"Right Shoulder: ({right_shoulder.x}, {right_shoulder.y})")
         # print(f"Left Hip: ({left_hip.x}, {left_hip.y})")
@@ -345,10 +345,10 @@ def start_tryon():
                     distance = np.sqrt((finger_x - button_x) ** 2 + (finger_y - y_pos) ** 2)
                     if distance < button_radius:
                         current_size = size
-                        print(f"Size selected: {current_size}")
+                        # print(f"Size selected: {current_size}")
                         break
-        else:
-            print("No hand landmarks detected!")
+        # else:
+            # print("No hand landmarks detected!")
 
         for size, y_pos in button_y_positions.items():
             color = (0, 255, 0) if size == current_size else (255, 255, 0)
