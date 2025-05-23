@@ -60,19 +60,35 @@ current_size = "L"
 # Initialize gender prediction
 def get_gender(frame):
     faces, confidences = cv.detect_face(frame)
-    gender = "Unknown"
+    genders = []
+
+    h, w = frame.shape[:2]
     for face in faces:
-        (startX, startY) = face[0], face[1]
-        (endX, endY) = face[2], face[3]
+        startX, startY, endX, endY = face
+        startX = max(0, startX)
+        startY = max(0, startY)
+        endX = min(w, endX)
+        endY = min(h, endY)
+
         face_crop = frame[startY:endY, startX:endX]
 
-        label, confidence = cv.detect_gender(face_crop)
+        # Resize to the input size your gender model expects (example: 224x224)
+        face_resized = cv2.resize(face_crop, (224, 224))
+
+        # Normalize pixel values (if required by your model)
+        face_normalized = face_resized / 255.0
+
+        # Convert to the right color format (if needed)
+        # face_rgb = cv2.cvtColor(face_normalized, cv2.COLOR_BGR2RGB)
+
+        label, confidence = cv.detect_gender(face_normalized)
+
         if label[0] == 'male':
-            gender = 'male'
+            genders.append('male')
         else:
-            gender = 'female'
-    
-    return gender
+            genders.append('female')
+
+    return genders if genders else ['Unknown']
 
 # Function to load image and get data
 def load_clothing_image(clothing_id):
@@ -212,6 +228,7 @@ def overlay_clothing(frame, clothing_img, landmarks, size_factor, aspect_ratio, 
         top_left_x = center_x - clothing_width // 2
         top_left_y = top_y + vertical_offset 
 
+        
         # Debug output
         # print(f"Current size: {current_size}")
         # print(f"Left Shoulder: ({left_shoulder.x}, {left_shoulder.y})")
@@ -276,6 +293,33 @@ def overlay_clothing(frame, clothing_img, landmarks, size_factor, aspect_ratio, 
         print(f"Error in overlay_clothing for {clothing_id}: {e}")
         return frame
 
+def calculate_fit_accuracy(frame, clothing_img, landmarks, clothing_id):
+    try:
+        left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value]
+        right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value]
+        left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP.value]
+        right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value]
+
+        frame_height, frame_width = frame.shape[:2]
+        shoulder_width = abs(right_shoulder.x - left_shoulder.x) * frame_width
+        torso_height = abs(left_shoulder.y - left_hip.y) * frame_height
+
+        # Get clothing image dimensions
+        clothing_height, clothing_width = clothing_img.shape[:2]
+
+        # Calculate scale differences
+        width_diff = abs(shoulder_width - clothing_width) / max(shoulder_width, clothing_width)
+        height_diff = abs(torso_height - clothing_height) / max(torso_height, clothing_height)
+
+        avg_diff = (width_diff + height_diff) / 2.0
+        accuracy = max(0, (1.0 - avg_diff)) * 100
+        return round(accuracy, 2)
+
+    except Exception as e:
+        print(f"[!] Error calculating accuracy: {e}")
+        return 0.0
+
+
 @app.route('/start_tryon', methods=['POST'])
 def start_tryon():
     data = request.get_json()
@@ -334,6 +378,10 @@ def start_tryon():
             mp_drawing.draw_landmarks(frame, pose_results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
             frame = overlay_clothing(frame, clothing_img, pose_results.pose_landmarks.landmark, size_factors[current_size], aspect_ratio, clothing_id)
 
+            accuracy = calculate_fit_accuracy(frame, clothing_img, pose_results.pose_landmarks.landmark, clothing_id)
+            cv2.putText(frame, f"Fit Accuracy: {accuracy:.2f}%", (30, 60),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
+            
         if hand_results.multi_hand_landmarks:
             for hand_landmarks in hand_results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)

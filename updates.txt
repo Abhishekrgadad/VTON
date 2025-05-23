@@ -7,8 +7,6 @@
 -> after selection move to cart or something realted to cart operations
 -> Size predication by recognizing the body structure.
 
-
-
 * Updates Done
 -> Make the appearance of python screen to full window.
 -> Gender Detection.

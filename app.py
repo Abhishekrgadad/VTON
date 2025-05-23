@@ -52,7 +52,7 @@ def contact():
 
 @app.route('/tryon', methods=['POST'])
 def tryon():
-    clothing_id = request.form.get('shirt')  # Using 'shirt' for both shirts and dresses
+    clothing_id = request.form.get('shirt')  
     if clothing_id in shirts or clothing_id in dresses:
         return render_template('tryon.html', shirt_id=clothing_id)
     return redirect(url_for('products'))
@@ -88,9 +88,7 @@ def register():
     if not fullname or not email or not password:
         error = "Full Name, Email, and Password are required."
         return render_template('register.html', error=error)
-
-    # Simulate user registration logic here (e.g., save to database)
-    # For now, just store user info in session for demonstration
+    
     session['user'] = email
 
     return redirect(url_for('home'))
