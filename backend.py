@@ -224,9 +224,11 @@ def overlay_clothing(frame, clothing_img, landmarks, size_factor, aspect_ratio, 
 
         # Calculate position
         center_x = int((left_shoulder.x + right_shoulder.x) / 2 * frame.shape[1])
-        top_y = int(((left_shoulder.y + right_shoulder.y) / 2) * frame.shape[0])
+        # top_y = int(((left_shoulder.y + right_shoulder.y) / 2) * frame.shape[0])
+        top_y = int(min(left_shoulder.y, right_shoulder.y) * frame.shape[0])
         top_left_x = center_x - clothing_width // 2
         top_left_y = top_y + vertical_offset 
+        
 
         
         # Debug output
